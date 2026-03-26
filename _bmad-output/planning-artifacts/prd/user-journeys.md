@@ -18,23 +18,35 @@ This document explicitly defines the entire sequence of events, available fields
 
 ---
 
-## Phase 2: Authentication State Routing
+## Phase 2: Navigation & Onboarding States
 
-**System Operation:** As the panel mounts, the app calls Canva's native `auth.getTokens()` to verify if the user's Canva ID is already mapped to valid X OAuth credentials.
+**System Operation:** As the Canva X Publisher is launched from the Share Menu, the app calls `auth.getTokens()` to evaluate the user's history and current session state.
 
-### Path A: Unauthenticated State (First-Time User / Logged Out)
-- **UI Rendered:** A static welcome screen.
-- **Fields & Elements Available:**
-  - `App Logo & Hero Text`: Static marketing copy explaining the value of the integration.
-  - `Connect to X` Button: Primary call-to-action.
-  - `Terms of Service & Privacy Policy`: Text hyperlinks opening in a new browser tab.
-- **Interaction:** User clicks **"Connect to X"**.
-- **System Operation:** App calls `auth.requestAuthentication()`. A secure pop-up window opens pointing to X's OAuth 2.0 authorization screen. The required scopes (`tweet.write`, `offline.access`, etc.) are explicitly requested by X.
-- **Alternative Outcome 1 (Denial):** User closes the pop-up or clicks "Deny". The pop-up closes. The side panel remains in the Unauthenticated State.
-- **Primary Outcome (Success):** User clicks "Authorize app". X returns the tokens. The Canva backend securely saves the Bearer & Refresh tokens. The UI automatically transitions to **Phase 3: Authenticated State**.
+### Path A: First-Time User (Never installed or opened the app)
+- **UI Rendered (Onboarding Page):** A static, dedicated welcome screen specifically designed to introduce the integration before the user touches any interactive controls.
+- **Fields & Elements:**
+  - `Hero Graphic`: High-quality Canva + X feature image.
+  - `Value Proposition Text`: Explanation of features (e.g., *"Post directly to X, build threads, and manage multiple accounts without leaving the editor."*).
+  - `Terms & Privacy Links`: Clickable hyperlinks.
+  - `Open` Button: Primary CTA.
+- **Interaction [Click 'Open']:** The Onboarding screen permanently dismisses. The UI renders the **Zero-State Settings Panel (See Path B)**.
 
-### Path B: Authenticated State (Returning User)
-- **UI Rendered:** Bypass the welcome screen entirely. Immediately render the core Settings configuration form.
+### Path B: Unauthenticated User (Returning but logged out)
+The app operates on a strict **Deferred Authentication** paradigm. Users do NOT face a hard login wall. Instead, they see a fully functional "Zero-State" Publisher UI to demonstrate value before gating the experience.
+- **Fields & Elements Available (Pre-Login):**
+  - `Hero Banner`: A dismissible banner ("Connect to X to unlock threaded publishing and premium features") positioned above the form.
+  - `Field 3.2 (Media Selection)`: Fully unlocked. Users can select design pages, and the app will enforce >5MB or 140s video validations locally.
+  - `Field 3.3 (Caption Input)`: Fully unlocked. Users can write text, utilize `@mentions`, and view dynamic character counts.
+  - `Phase 4 (Live WYSIWYG Preview)`: Fully unlocked. Visually renders the drafted layout mirroring X's native UI.
+  - *(HIDDEN)*: Advanced options (User Tags, Reply restrictions, Content Warnings, Threading) and Account Selectors remain hidden until authenticated.
+- **The Auth Gate:** The primary floating button at the bottom of the panel reads **"Connect to X to Publish"**.
+- **Execution [Click 'Connect to X to Publish']:** 
+  - The Canva SDK `auth.requestAuthentication()` opens the OAuth 2.0 popup.
+  - **Alternative Outcome (Denial):** The user closes the OS popup or explicitly clicks "Deny". The popup closes. The side panel remains in the Zero-State. The user's drafted caption and media selections are perfectly preserved without disruption.
+  - **Primary Outcome (Success):** X authorizes the app. The backend saves the Bearer & Refresh tokens. The UI *preserves* the user's drafted content, instantly swapping the primary button text to "Publish to X", and dynamically unlocking the Advanced Options (Transitioning to Path C).
+
+### Path C: Authenticated State (Returning User, Active Session)
+- **UI Rendered:** Bypass the Onboarding Page and Hero Banner completely. Immediately render the core Settings configuration form fully unlocked (Phase 3).
 
 ---
 
@@ -83,11 +95,27 @@ The user is now looking at the primary configuration form to build their post.
 
 ---
 
-## Phase 4: WYSIWYG Live Preview Panel
+## Phase 4: Extreme WYSIWYG Live Preview Syncing
 
-- **UI State:** Rendered in a dedicated "Preview" tab or stacked beneath the form fields.
-- **Behavior (Read-Only State Machine):** This panel is not interacted with directly. It is a live reflection of Phases 3.1 through 3.5. 
-- As the user types in 3.3, configures fields in 3.5, or selects an account in 3.1, the Preview perfectly maps the data into a pixel-perfect CSS mockup of the native `x.com` feed (including Dark Mode inversion based on the user's Canva OS settings).
+The Preview panel perfectly mocks the native `x.com` DOM. Every field in Phase 3 exerts a specific, dynamic mutation on the Preview, providing absolute confidence to the creator before executing.
+
+### 4.1 Media Grid Formats (Reaction to Field 3.2)
+The Preview mathematically restructures based on explicit image counts, mirroring X's native aspect-ratio crops:
+- **1 Image selected:** Renders a sprawling 16:9 or native aspect ratio card.
+- **2 Images selected:** Splits the preview container vertically (50/50). Both images are center-cropped into 8:9 vertical slivers.
+- **3 Images selected:** Renders one large 8:9 vertical sliver on the left, and stacks two 16:9 horizontal images on the right side.
+- **4 Images selected:** Renders a symmetrical 2x2 grid, center-cropping all images to exact 16:9 ratios.
+- **Video/GIF selected:** Renders the media full-bleed with a static X Video UI overlay (a circular `Play` icon in the center, and a black `duration` badge pinned to the bottom right corner).
+
+### 4.2 Multi-Account Cascading Effects (Reaction to Field 3.1)
+When the user switches accounts in the Dropdown (e.g., from a Standard to a Premium X Account):
+- The Avatar and `@handle` at the top of the Preview sync instantly.
+- The UI triggers a silent background check against the X API to verify the newly selected account's subscription tier. If Premium is confirmed, the Caption Field (3.3) limits dynamically explode from `280` to `25,000`, instantly removing any red constraint errors in the UI.
+
+### 4.3 Advanced Field Mutations (Reaction to Field 3.5)
+- **Alt-Text applied:** Renders a small, black, clickable `ALT` badge pinned to the bottom left of the corresponding image in the Preview.
+- **Content Warning checked:** The Preview applies a CSS `backdrop-filter: blur(20px)` over the media, stamping a native X *"The author flagged this as sensitive"* warning box directly over the blur.
+- **Thread Toggle active:** The Preview injects a 2px solid grey vertical line `#CFD9DE` originating from the bottom of the primary post's Avatar, connecting downward to the Avatar of the secondary thread post rendered precisely below it.
 
 ---
 

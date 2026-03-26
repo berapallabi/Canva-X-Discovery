@@ -14,62 +14,71 @@ graph TD
     classDef success fill:#d5f5e3,stroke:#27ae60,stroke-width:2px;
     classDef backend fill:#fcf3cf,stroke:#f1c40f,stroke-width:2px;
 
-    %% Phase 1 & 2: Entry & Auth
-    A([User finishes Canva Design]) --> B[Clicks Share > X App Icon]:::action
-    B --> C{auth.getTokens Check}:::backend
+    %% Phase 1 & 2: Entry & Routing
+    A([User clicks Share > X App Icon]) --> B{auth.getTokens Check}:::backend
     
-    C -->|No Tokens| D[Phase 2A: Unauthenticated UI]:::uiState
-    D --> E[User clicks 'Connect to X']:::action
-    E --> F[OAuth 2.0 Popup]:::uiState
-    F -->|Deny| D
-    F -->|Success: Tokens Saved| G
+    B -->|First-Time User| C[Phase 2A: Static Onboarding Page]:::uiState
+    C --> D[User clicks 'Open']:::action
+    D --> E[Phase 2B: Zero-State Settings UI]:::uiState
     
-    C -->|Valid Tokens| G[Phase 3: Authenticated Settings UI]:::uiState
+    B -->|Logged Out| E
+    
+    E --> F[User drafts Media & Caption in Live Preview]:::action
+    F --> G[User clicks 'Connect to X to Publish']:::action
+    
+    G --> H[OAuth 2.0 Popup]:::uiState
+    H -->|Denial or Close| E
+    H -->|Success: Tokens Saved| I
+    
+    B -->|Valid Tokens| I[Phase 3: Authenticated Settings UI]:::uiState
     
     %% Phase 3: Field Interactions & Validations
-    G --> H[Field 3.1: Account Selector]:::action
-    H -.->|Change Context| G
-    H -.->|Disconnect Clicked| H1[Canva Token DELETE]:::backend
-    H1 --> D
+    I --> J[Field 3.1: Account Selector]:::action
+    J -.->|Triggers Premium Cap Check| I
+    J -.->|Disconnect Clicked| J1[Canva Token DELETE]:::backend
+    J1 --> E
     
-    G --> I[Field 3.2: Media Selection]:::action
-    I --> I1{Validation Gate}
-    I1 -->|>4 Images| I2[UI Block: 'Max 4 Images']:::error
-    I1 -->|Mixed Media| I3[UI Block: 'Cannot Mix Video/Image']:::error
-    I1 -->|>5MB or >140s| I4[UI Block: 'Size/Duration Exceeded']:::error
-    I1 -.->|Pass| J
+    I --> K[Field 3.2: Media Selection]:::action
+    K --> K1{Validation Gate}
+    K1 -->|>4 Images| K2[UI Block: 'Max 4 Images']:::error
+    K1 -->|Mixed Media| K3[UI Block: 'Cannot Mix Video/Image']:::error
+    K1 -->|>5MB or >140s| K4[UI Block: 'Size/Duration Exceeded']:::error
+    K1 -.->|Pass| L
     
-    G --> J[Field 3.3: Caption Input]:::action
-    J --> J1{Length Check}
-    J1 -->|>280 Chars| J2[UI Block: Red Counter, Publish Disabled]:::error
-    J1 -.->|Pass| K
+    I --> L[Field 3.3: Caption Input]:::action
+    L --> L1{Length Check}
+    L1 -->|>280 Chars Base| L2[UI Block: Red Counter, Publish Disabled]:::error
+    L1 -.->|Pass| M
     
-    G --> K[Field 3.5: Advanced Options]:::action
-    K --> K1[Typeahead User Tags & Alt Text]
-    K1 -->|>10 Tags| K2[UI Block: 'Max 10 Tags Toast']:::error
+    I --> M[Field 3.5: Advanced Options]:::action
+    M --> M1[Typeahead User Tags]
+    M1 -->|>10 Tags| M2[UI Block: 'Max 10 Tags Toast']:::error
     
-    %% Phase 4 & 5: Preview and Publish
-    I1 & J1 & K1 == Real-Time Sync ==> L[Phase 4: WYSIWYG Live Preview Panel Renders]:::uiState
+    %% Phase 4 & 5: Complex Preview and Publish
+    K1 -.->|Calculates 2x2 Grids or Video UI| N[Phase 4: WYSIWYG Live Preview Renders]:::uiState
+    L1 -.-> N
+    M1 -.-> N
+    M -.->|Inject Thread Lines / Blur Sensitive| N
     
-    J -.->|Valid Form Payload| M([Phase 5: User clicks 'Publish to X']):::action
+    L -.->|Valid Form Payload| O([Phase 5: User clicks 'Publish to X']):::action
     
-    M --> N[Canva SDK publishContent fired]:::backend
-    N --> O[Next.js Proxy Receives POST]:::backend
+    O --> P[Canva SDK publishContent fired]:::backend
+    P --> Q[Next.js Proxy Receives POST]:::backend
     
     %% Backend Validations & Responses
-    O --> P{Verify Canva JWT Signature}:::backend
-    P -->|HTTP 401 Invalid Sign| P1[UI Purge Tokens: 'Session Expired']:::error
-    P1 --> D
+    Q --> R{Verify Canva JWT Signature}:::backend
+    R -->|HTTP 401 Invalid Sign| R1[UI Purge Tokens: 'Session Expired']:::error
+    R1 --> C
     
-    P -->|Valid| Q[React Proxy Chunker initialized]:::backend
-    Q --> R[X API /media/upload INIT + APPEND + FINALIZE]:::backend
+    R -->|Valid| S[React Proxy Chunker initialized]:::backend
+    S --> T[X API /media/upload INIT + APPEND + FINALIZE]:::backend
     
-    R --> S[X API /tweets POST with Media ID]:::backend
+    T --> U[X API /tweets POST with Media ID]:::backend
     
-    S -->|HTTP 502/503| S1[UI Halt: 'X API Downtime']:::error
-    S -->|HTTP 429| S2[UI Halt: 'Rate Limit Exhausted Reset Epoch']:::error
-    S -->|HTTP 403 Suspended| P1
-    S -->|HTTP 200 Success| T([Phase 6: Success Screen 'View on X' Link]):::success
+    U -->|HTTP 502/503| U1[UI Halt: 'X API Downtime']:::error
+    U -->|HTTP 429| U2[UI Halt: 'Rate Limit Exhausted Epoch']:::error
+    U -->|HTTP 403 Suspended| R1
+    U -->|HTTP 200 Success| V([Phase 6: Success Screen 'View on X' Link]):::success
 ```
 
 ## 2. Dynamic Thread Builder Validation UX
