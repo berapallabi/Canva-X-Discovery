@@ -94,8 +94,7 @@ User lifecycle tiers:
 ### Business Success
 
 **Revenue Model:**
-- **Free tier:** Instant publish ("Post Now"), basic caption editor, X feed preview — drives acquisition and activation.
-- **Pro tier (paid):** Scheduling, multi-account support — monetisation trigger.
+- **Monetisation:** The integration will be offered as a free utility to drive Canva user acquisition, retention, and platform stickiness.
 
 **Growth Targets (3 months post-launch):**
 
@@ -103,7 +102,6 @@ User lifecycle tiers:
 |---|---|
 | Monthly Active Users (MAU) | 5,000 |
 | Install → First Publish conversion | ≥ 15% (7-day rolling window) |
-| Free → Pro upgrade rate | ≥ 8% of MAU |
 | Canva Marketplace rating | ≥ 4.5 / 5.0 |
 
 **Anti-Metrics (explicitly not optimised for):**
@@ -143,26 +141,22 @@ MVP is ready to scale when **all three gates** are met:
 
 ### MVP — Minimum Viable Product
 
-| # | Feature | Tier | Priority |
-|---|---|---|---|
-| 1 | Post Now (instant publish via `publishContent()`) | Free | Must-Have |
-| 2 | X OAuth 2.0 Connect (deferred auth, `auth.initOauth()`) | Free | Must-Have |
-| 3 | Multi-account support (account selector in Settings UI) | Free | Must-Have |
-| 4 | WYSIWYG X feed preview (`renderPreviewUi`, light/dark mode) | Free | Must-Have |
-| 5 | X media pre-flight validation (format, size, duration) | Free | Must-Have |
-| 6 | Caption editor (character counter: 280 / 25K Premium) | Free | Must-Have |
-| 7 | Scheduling — date/time picker + server-side queue | Pro | High |
-| 8 | Scheduled post management — view, cancel, retry failed | Pro | High |
-| 9 | Post-publish confirmation + live tweet URL | Free | Must-Have |
-| 10 | OAuth token persistence (no re-login per session) | Free | Must-Have |
-
-> **Note:** Canva's Content Publisher intent does not natively support scheduling. Feature 7-8 require a custom backend scheduling service.
+| # | Feature | Priority |
+|---|---|---|
+| 1 | Post Now (instant publish via `publishContent()`) | Must-Have |
+| 2 | X OAuth 2.0 Connect (deferred auth, `auth.initOauth()`) | Must-Have |
+| 3 | Multi-account support (account selector in Settings UI) | Must-Have |
+| 4 | WYSIWYG X feed preview (`renderPreviewUi`, light/dark mode) | Must-Have |
+| 5 | X media pre-flight validation (format, size, duration) | Must-Have |
+| 6 | Caption editor (character counter: 280 / 25K Premium) | Must-Have |
+| 9 | Post-publish confirmation + live tweet URL | Must-Have |
+| 10 | OAuth token persistence (no re-login per session) | Must-Have |
 
 ### Growth Features (Post-MVP)
 
 - AI caption generator (LLM-powered, tuned for X voice and trending topics)
 - Batch scheduling (queue up to 10 posts in a single session)
-- Thread publisher (multi-page Canva deck → X thread)
+- Thread publisher & Reply workflows (Quote tweets, replies, and threads are strictly out-of-scope for MVP)
 - Team approval workflow (SMM submit → brand manager approve → publish)
 
 ### Expansion Vision (12–24 months)
@@ -317,7 +311,7 @@ Using `PreviewMedia` + `registerOnPreviewChange()` to render a live, accurate X 
     ├── Settings UI (renderSettingsUi)
     │     ├── X Account Selector (handle + avatar)
     │     ├── Caption Editor (character counter)
-    │     ├── Schedule Picker (date/time/timezone) [Pro]
+    │     ├── Schedule Picker (date/time/timezone)
     │     └── OAuth Connect button (deferred auth)
     ├── Preview UI (renderPreviewUi)
     │     └── WYSIWYG X Feed Simulation (light/dark)
@@ -328,7 +322,7 @@ Using `PreviewMedia` + `registerOnPreviewChange()` to render a live, accurate X 
 
 [Backend Service]
     ├── OAuth Token Manager (store, refresh, revoke)
-    ├── Scheduling Queue (job scheduler + retry logic) [Pro]
+    ├── Scheduling Queue (job scheduler + retry logic)
     └── X API Proxy (media upload, tweet creation)
 ```
 
@@ -389,22 +383,22 @@ X Feed Post (Video):
 - **FR2:** Users can view which X account is currently active (handle + avatar displayed in Settings UI).
 - **FR3:** Users can connect multiple X accounts and switch between them from the account selector.
 - **FR4:** Users can disconnect their X account, which triggers immediate server-side token deletion.
-- **FR5:** The app preserves the user's X authentication session across Canva editor sessions (token persistence via refresh token).
-- **FR6:** Users can interact with the Settings UI and preview their post before connecting their X account (deferred authentication).
+- **FR5:** The app preserves the user's X authentication session across Canva editor sessions. The backend must securely map the stored X OAuth tokens to the user's verified Canva User ID.
+- **FR6:** Users can interact with the Settings UI and preview their post before connecting their X account (deferred authentication). To build trust, the UI must explain the required X permissions (*offline.access, tweet.write*) immediately above the "Connect X" button prior to launching the OAuth pop-up.
 
 ### Content Configuration
 
 - **FR7:** Users can write and edit a post caption within the Settings UI.
 - **FR8:** Users can view a live character count for their caption (280-character standard; 25,000-character X Premium).
-- **FR9:** Users can select which Canva design pages to include in their post (managed by Canva's page selector component).
+- **FR9:** Users can select which Canva design pages to include in their post (managed by Canva's page selector component). In the MVP, multiple selected pages are attached as multiple images to a single tweet (up to X's limit of 4 images per tweet).
 - **FR10:** Users can select the output type for their post (X Feed Image Post or X Feed Video Post) from Canva's output type dropdown.
-- **FR11:** The app validates media against X's technical specifications before publishing (format, file size, aspect ratio, video duration and resolution).
-- **FR12:** Users receive clear, actionable error messages when media validation fails, with specific guidance on how to resolve the issue.
+- **FR11:** The app validates media against X's technical specifications before publishing (format, file size, aspect ratio, video duration and resolution). The frontend must also validate that the total string payload (caption + metadata) fits within the strict 5KB Canva SDK `PublishRef` limit.
+- **FR12:** Users receive clear, actionable error messages when media or payload validation fails, with specific guidance on how to resolve the issue.
 
 ### Preview
 
-- **FR13:** Users can view a real-time WYSIWYG preview of their post as it will appear in the X feed.
-- **FR14:** The preview updates dynamically as the user edits their caption or modifies the Canva design.
+- **FR13:** Users can view a real-time WYSIWYG preview of their post as it will appear in the X feed, explicitly simulating X's specific center-cropping logic for irregular aspect ratios.
+- **FR14:** The preview updates dynamically as the user edits their caption or modifies the Canva design, correctly scaling and cropping.
 - **FR15:** The preview renders in both X light mode and dark mode.
 - **FR16:** The preview displays the active X account handle and avatar.
 - **FR17:** The preview shows appropriate loading states — placeholder image for images; progress bar for videos.
@@ -416,22 +410,10 @@ X Feed Post (Video):
 - **FR20:** The app returns the live tweet URL, which Canva displays as the primary action in the post-publish success dialog.
 - **FR21:** Users can initiate X account authentication from within the publish flow if not previously connected.
 
-### Scheduling (Pro)
-
-- **FR22:** Pro users can schedule a post for a specific future date and time.
-- **FR23:** The scheduling UI displays the selected timezone explicitly alongside the date/time input.
-- **FR24:** The scheduling UI defaults to the user's local timezone with the ability to change it.
-- **FR25:** Scheduled posts are executed by a server-side queue, independent of whether the user has Canva open.
-- **FR26:** Pro users can view their list of pending scheduled posts.
-- **FR27:** Pro users can cancel a scheduled post before its publish time.
-- **FR28:** Pro users can manually retry a failed scheduled post.
-- **FR29:** Users receive an in-panel notification when a scheduled post fails to publish, surfaced on the next app session.
-
 ### Error Handling & Reliability
 
 - **FR30:** The app surfaces X API errors to the user with clear, platform-specific error messages (e.g., session expired, duplicate content, media rejected).
-- **FR31:** The scheduling queue implements exponential backoff retry logic for transient X API failures (429 rate limit, 5xx server errors).
-- **FR32:** Failed scheduled posts are marked `failed` after maximum retries and surfaced to the user on next app session with a retry option.
+- **FR31:** The stateless proxy implements transient retry logic for immediate X API failures (429 rate limit, 503 server errors).
 
 ---
 
@@ -451,12 +433,12 @@ X Feed Post (Video):
 - **NFR7:** All communication between the Canva app frontend and the backend must occur over HTTPS/TLS 1.2+.
 - **NFR8:** The OAuth pop-up must follow Canva's pop-up guidelines — no auth forms displayed inside the app iframe.
 - **NFR9:** Token revocation must be immediate upon user-initiated disconnect or app removal.
-- **NFR10:** The backend must validate that each API request originates from an authenticated Canva user session.
+- **NFR10:** The backend must cryptographically verify the Canva-signed JWT (`Authorization` header) on every custom API request to securely identify the Canva User ID before interacting with their X tokens.
 
 ### Scalability
 
-- **NFR11:** The scheduling backend must support ≥ 10,000 scheduled post executions per day without degradation in P95 delivery time.
-- **NFR12:** The app backend must scale to 10x user growth (50,000 MAU) without architectural changes — achieved via stateless API design and horizontally scalable job queue.
+- **NFR11:** Next.js serverless architecture scales automatically to handle traffic spikes.
+- **NFR12:** The app backend must scale to 10x user growth (50,000 MAU) without architectural changes — achieved via explicitly stateless API routing.
 - **NFR13:** X API quota must be managed at the per-user level, preventing any single user's volume from affecting other users' availability.
 
 ### Accessibility & Platform Compliance
@@ -468,7 +450,6 @@ X Feed Post (Video):
 
 ### Integration Reliability
 
-- **NFR18:** The scheduling queue must implement idempotent job execution — a post must never be published more than once due to retry or duplicate job creation.
+- **NFR18:** The codebase must remain thoroughly stateless ensuring idempotent API deliveries.
 - **NFR19:** Video media upload must use X's chunked upload endpoint (`/2/media/upload` with `INIT`/`APPEND`/`FINALIZE` commands).
-- **NFR20:** The publish pipeline must handle X API rate limit (429) responses gracefully — queue retry, no silent failure, user notified on persistent failure.
-- **NFR21:** The app must handle OAuth token expiry gracefully — refresh token flow triggered automatically before scheduled delivery; user notified in-panel if refresh fails.
+- **NFR21:** The app must handle OAuth token expiry gracefully using Canva's getAccessToken method.
