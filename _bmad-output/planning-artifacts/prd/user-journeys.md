@@ -89,9 +89,9 @@ The user is now looking at the primary configuration form to build their post.
 - **Interaction:** User clicks to open.
 - **Sub-Fields Revealed:**
   1. **Alt-Text Inputs:** One text field dynamically generated for *each* image selected in 3.2. (Max 1000 characters enforced natively by `<input maxLength>`).
-  2. **User Tagging Input:** A typeahead search bar. (If user adds an 11th tag to the same image -> UI throws toast error: *"Max 10 tags per image."*).
+  2. **User Tagging Input:** A typeahead search bar. **[BLOCKED BY X API v2]** Because X API v2 physically lacks media-tagging parameters, this UI feature gracefully degrades. When the user selects a tag, the app silently appends the `@mention` text string to the very end of the main Caption body payload instead of marking the image coordinate.
   3. **Reply Controls Dropdown:** Options: `Everyone` (Default), `Accounts you follow`, `Only accounts you mention`.
-  4. **Content Warning Checkbox:** Label: *"Flag media as sensitive"*. (If checked, applies an immediate blur-filter to the image inside the Preview Panel).
+  4. **Content Warning Checkbox:** Label: *"Flag media as sensitive"*. **[BLOCKED BY X API v2]** The X v2 API cannot dynamically apply the `possibly_sensitive` boolean per-tweet. This checkbox provides a local UI blur for the Canva Preview, but the live X post will rely entirely on the user's default account-level settings.
 
 ---
 
@@ -110,7 +110,8 @@ The Preview mathematically restructures based on explicit image counts, mirrorin
 ### 4.2 Multi-Account Cascading Effects (Reaction to Field 3.1)
 When the user switches accounts in the Dropdown (e.g., from a Standard to a Premium X Account):
 - The Avatar and `@handle` at the top of the Preview sync instantly.
-- The UI triggers a silent background check against the X API to verify the newly selected account's subscription tier. If Premium is confirmed, the Caption Field (3.3) limits dynamically explode from `280` to `25,000`, instantly removing any red constraint errors in the UI.
+- **[BLOCKED BY X API v2] Premium Status Detection:** The `users/me` endpoint does not broadcast X Premium subscription status. The Canva proxy has no programmatic way of calculating 25,000 character limits dynamically. 
+- **UX Fallback:** The UI renders a manual override checkbox: *"I am an X Premium subscriber (Allow 25,000 characters)"*. The UI relies entirely on the user's honesty before blindly transmitting the massive payload to the Next.js proxy.
 
 ### 4.3 Advanced Field Mutations (Reaction to Field 3.5)
 - **Alt-Text applied:** Renders a small, black, clickable `ALT` badge pinned to the bottom left of the corresponding image in the Preview.

@@ -23,18 +23,18 @@
 ## Content Configuration
 
 - **FR7:** Users can write and edit a post caption within the Settings UI.
-- **FR8:** Users can view a live character count for their caption (280-character standard; 25,000-character X Premium).
+- **FR8:** Users can view a live character count for their caption (280-character standard; 25,000-character X Premium). **[BLOCKED BY X API v2]** The proxy cannot verify Premium status. The UI must provide a manual override checkbox to unlock the 25k limit.
 - **FR9:** Users can select which Canva design pages to include in their post (managed by Canva's page selector component). In the MVP, multiple selected pages are attached as multiple images to a single tweet (up to X's limit of 4 images per tweet).
 - **FR10:** Users can select the output type for their post (X Feed Image Post or X Feed Video Post) from Canva's output type dropdown.
 - **FR10.1:** Users can explicitly select the specific media format (Static Image, Video, or Animated GIF), enabling format-specific X API validations.
 - **FR10.2:** For video and GIF formats, users can select a specific frame from the assigned media or upload a custom file to serve as the Cover Image.
-- **FR10.3:** Users can tag existing X accounts (@mentions) in visual media via a dedicated "Tag People" interface, just like the native X app.
+- **FR10.3:** Users can tag existing X accounts (@mentions) in visual media via a dedicated "Tag People" interface, just like the native X app. **[BLOCKED BY X API v2]** Native image tagging unsupported. The app MUST gracefully degrade this by appending the selected `@mentions` to the end of the text Payload.
 - **FR10.4:** The app provides a localized "Trending Hashtags" typeahead suggestion tool within the caption editor to boost post engagement.
 - **FR10.5:** Users can add explicit Alt-Text descriptions to all attached media directly from the Settings UI for accessibility compliance.
 - **FR10.6:** Users can author Threaded Posts (multi-tweet threads) to bypass standard character limits, chaining multiple Canva pages into sequential tweets.
 - **FR10.7:** Users can attach geographical Location tags to their published posts.
 - **FR10.8:** Users can configure Reply Controls prior to publishing, restricting who can engage with their post on X (e.g., Everyone, Accounts you follow, Verified accounts, or Only accounts you mention).
-- **FR10.9:** Users can explicitly flag their attached media with Content Warnings (Sensitive Media tag) to ensure compliance with X's safety and publishing policies.
+- **FR10.9:** Users can explicitly flag their attached media with Content Warnings (Sensitive Media tag) to ensure compliance with X's safety and publishing policies. **[BLOCKED BY X API v2]** API no longer accepts per-tweet sensitive flags. The UI MUST provide a blurred CSS mockup for the Canva Preview only, relying on the user's explicit X account defaults for the live post.
 - **FR11:** The app validates media against X's technical specifications before publishing (format, file size, aspect ratio, video duration and resolution). The frontend must also validate that the total string payload (caption + metadata) fits within the strict 5KB Canva SDK `PublishRef` limit.
 - **FR12:** Users receive clear, actionable error messages when media or payload validation fails, with specific guidance on how to resolve the issue.
 

@@ -14,9 +14,10 @@ This document serves as the absolute source of truth for all quantitative constr
 
 | Input Field | Maximum Limit | Overflow Behavior (UI Rule) |
 | :--- | :--- | :--- |
-| **Caption Text** | `280 characters` (Standard)<br>`25,000 characters` (Premium) | **Warn & Block:** Show a live decrementing counter (e.g., `21 / 280`). If it hits `0`, counter turns red (`-14`). The "Publish" button MUST disable until text is reduced or user checks the "I have X Premium" override toggle. |
+| **Caption Text** | `280 characters` (Standard)<br>`25,000 characters` (Premium) | **Warn & Block:** Show a live decrementing counter. **[API LIMIT]:** X does not broadcast Premium status. UI must manually ask user if they are Premium to unlock 25,000 limit. |
 | **Alt-Text** | `1000 characters` per media item | **Block:** Display character limit on Alt-Text input field. Prevent typing >1000 chars. |
-| **User Tagging (@)** | `10 users` per visual media item | **Warn:** If the user attempts to add an 11th tag to an image, display toast: *"Maximum of 10 tags allowed per image."* Hide the "Add Tag" button. |
+| **User Tagging (@)** | `10 users` per visual media item | **[BLOCKED BY X API v2]:** Native image tagging unsupported. Warn user that tags will be converted into standard `@mentions` appended to the text caption. |
+| **Sensitive Flag** | Boolean | **[BLOCKED BY X API v2]:** X API v2 dropped per-tweet support. UI checkbox acts as a placebo for the Canva Preview only. |
 | **Thread Depth** | `25 tweets` maximum per thread | **Block:** If the Canva flow attempts to chain >25 pages into a sequential thread, block the thread toggle and show error. |
 
 ## 3. Infrastructural Constraints
