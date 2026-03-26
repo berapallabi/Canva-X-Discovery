@@ -1,13 +1,24 @@
 # Functional Requirements
 
-## Account & Authentication Management
+## 1. Account & Authentication Management
 
-- **FR1:** Users can connect their X account to the app via OAuth 2.0 without leaving the Canva editor.
-- **FR2:** Users can view which X account is currently active (handle + avatar displayed in Settings UI).
-- **FR3:** Users can connect multiple X accounts and switch between them from the account selector.
-- **FR4:** Users can disconnect their X account, which triggers immediate server-side token deletion.
-- **FR5:** The app preserves the user's X authentication session across Canva editor sessions. The backend must securely map the stored X OAuth tokens to the user's verified Canva User ID.
-- **FR6:** Users can interact with the Settings UI and preview their post before connecting their X account (deferred authentication). To build trust, the UI must explain the required X permissions (*offline.access, tweet.write*) immediately above the "Connect X" button prior to launching the OAuth pop-up.
+### 1.1 Pre-Login (Unauthenticated State)
+- **FR1.1:** Upon launching the app, if no valid X OAuth token exists for the user's Canva ID, the app MUST display the "Unauthenticated State" UI.
+- **FR1.2:** The unauthenticated UI MUST allow users to interact with the Settings UI (drafting captions, selecting media) and view the Preview panel before logging in (Deferred Authentication).
+- **FR1.3:** A primary "Connect to X" CTA MUST be persistent in the Settings panel. Directly above this CTA, the UI MUST explicitly list the exact scopes requested during OAuth: `tweet.read`, `tweet.write`, `users.read`, `offline.access`.
+- **FR1.4:** Clicking "Connect to X" MUST trigger Canva's native `auth.requestAuthentication()` SDK method, launching a secure OAuth 2.0 popup without navigating the user away from the active Canva Editor iframe.
+
+### 1.2 Post-Login (Authenticated State)
+- **FR2.1:** Upon successful OAuth token exchange, the UI MUST seamlessly transition to the "Authenticated State" without requiring a panel reload.
+- **FR2.2:** The Settings UI MUST display an Account Profile Card representing the active session. This card MUST surface exact data extracted from the X `users/me` endpoint: User Display Name, `@handle`, and Profile Avatar Image URL.
+- **FR2.3:** The authentication session MUST be persistent. The background Next.js proxy MUST safely leverage Canva's native `auth` secure storage token APIs to retrieve the X Bearer and Refresh tokens upon subsequent editor loads.
+
+### 1.3 Multi-Account Support & Disconnection
+- **FR3.1:** Users MUST be able to connect multiple distinct X accounts securely under a single Canva User ID context.
+- **FR3.2:** The Account Profile Card MUST operate as a dropdown Account Selector. When clicked, it MUST render a list of all currently authenticated X accounts.
+- **FR3.3:** Selecting an alternate account from the dropdown MUST seamlessly switch the active publishing context and immediately update the `@handle` and Avatar reflected in the WYSIWYG Preview panel.
+- **FR3.4:** Every connected account in the dropdown MUST feature a distinct "Disconnect" action.
+- **FR3.5:** Clicking "Disconnect" MUST trigger a protective confirmation dialog. Upon user approval, the app MUST explicitly execute a DELETE request to purge the associated X OAuth tokens from Canva's secure storage API, completely revoking local access and returning the user to the Unauthenticated State if no other accounts remain.
 
 ## Content Configuration
 

@@ -7,22 +7,21 @@
 | 1 | Post Now (instant publish via `publishContent()`) | Must-Have |
 | 2 | X OAuth 2.0 Connect (deferred auth, `auth.initOauth()`) | Must-Have |
 | 3 | Multi-account support (account selector in Settings UI) | Must-Have |
-| 4 | WYSIWYG X feed preview (`renderPreviewUi`, light/dark mode) | Must-Have |
-| 5 | X media pre-flight validation (format, size, duration) | Must-Have |
-| 6 | Caption editor (character counter: 280 / 25K Premium) | Must-Have |
-| 9 | Post-publish confirmation + live tweet URL | Must-Have |
-| 10 | OAuth token persistence (no re-login per session) | Must-Have |
+| 4 | WYSIWYG X feed preview (Real-time dynamic overlay) | Must-Have |
+| 5 | X media pre-flight validation (format, size, chunking) | Must-Have |
+| 6 | Exact X-Native Feature Parity (Alt-Text, Threads, Reply Controls, Content Warnings) | Must-Have |
+| 7 | Post-publish confirmation + live tweet URL | Must-Have |
+| 8 | OAuth token persistence & explicit native revocation | Must-Have |
 
-## Growth Features (Post-MVP)
+## Strictly Out of Scope (Architectural Constraints)
 
-- AI caption generator (LLM-powered, tuned for X voice and trending topics)
-- Batch scheduling (queue up to 10 posts in a single session)
-- Thread publisher & Reply workflows (Quote tweets, replies, and threads are strictly out-of-scope for MVP)
-- Team approval workflow (SMM submit → brand manager approve → publish)
+Because we have elected for a **Stateless Proxy / Zero Database Architecture** to maximize security and minimize maintenance, any feature requiring persistent background state is strictly impossible for this integration.
+- **Batch Scheduling:** Impossible without a database to hold the scheduled payload and a cron worker.
+- **Automated Retweeting/Recurring Posts:** Impossible without a database queue.
 
 ## Expansion Vision (12–24 months)
 
-- Multi-platform publishing (LinkedIn, Instagram, Facebook)
+- Multi-platform publishing (LinkedIn, Instagram, Facebook) introducing a stateful persistence layer.
 - Post-publish analytics (pull X engagement data back into Canva)
 - Content intelligence (recommend post times based on past performance)
 - "Creative-to-feed OS" — Canva as the unified creation and distribution hub

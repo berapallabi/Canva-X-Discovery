@@ -34,3 +34,19 @@
 - **NFR18:** The codebase must remain thoroughly stateless ensuring idempotent API deliveries.
 - **NFR19:** Video media upload must use X's chunked upload endpoint (`/2/media/upload` with `INIT`/`APPEND`/`FINALIZE` commands).
 - **NFR21:** The app must handle OAuth token expiry gracefully using Canva's getAccessToken method.
+
+## Data Privacy & Compliance (Zero-Retention Policy)
+
+- **NFR22:** The Next.js proxy MUST operate under a strict "Zero-Retention" policy for user-generated content. Visual media payloads (images, video chunks, and captions) MUST remain entirely transient in server memory (`/tmp` or RAM buffered) only for the absolute duration required to pass them to the X API. They MUST NEVER be written to persistent database storage or long-term disk.
+- **NFR23:** The proxy MUST NOT log Personal Identifiable Information (PII), full OAuth Bearer Tokens, or user captions in application logs (e.g., Vercel Logs or Datadog). Server logs MUST be actively sanitized to reflect only transaction IDs, generic Canva User ID hashes, and HTTP status codes.
+- **NFR24:** The app must seamlessly comply with GDPR/CCPA "Right to be Forgotten" mandates inherently. Because no data is stored on our servers, the programmatic deletion of OAuth tokens via Canva's native API (FR3.5) guarantees immediate and complete cessation of access, with zero lingering artifacts remaining on our infrastructure.
+
+## Application Telemetry & Analytics
+
+- **NFR25:** The architecture MUST implement anonymous, aggregated telemetry to track basic operational success rates (e.g., successful vs. failed publishes, format distributions, and 429 Rate Limit incidences). This pipeline MUST be rigorously audited to ensure zero user-traceable PII ingress.
+
+## Strict Rate Limit & External Outage Handling
+
+- **NFR26:** If the X API is globally degraded or unreachable (returning `500`, `502`, or `503` errors), the Next.js proxy MUST immediately halt transmission, cleanly terminating the user's publish request, and mapping the failure to a localized "X is currently experiencing downtime" UI alert to prevent cascading chunk-upload failures.
+- **NFR27:** The backend MUST explicitly parse X's `x-rate-limit-remaining` and reset headers. When a user exhausts their daily posting quota (resulting in a `429 Too Many Requests`), the UI MUST actively block further publish attempts and clearly state the exact time/date when their posting quota will reset, replacing generic errors with a frictionless UX.
+- **NFR28:** If an authenticated X Account is suspended, locked, or has explicitly revoked the Canva App's permission via X's native security settings, the proxy will organically receive a `403 Forbidden` or `401 Unauthorized` response. The Next.js backend MUST catch these specific status codes and relay a specific error code to the frontend, which MUST then automatically trigger the internal token purge protocol (FR3.5) to clear the "dead" session state from the UI.
