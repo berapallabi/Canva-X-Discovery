@@ -46,7 +46,7 @@ To drive premium engagement, users need a "What You See Is What You Get" simulat
 
 ### 7. Dependencies
 - Dependent on Story 1.1 for authentication data (user avatar).
-- Dependent on Story 2.1 for the active caption string.
+- Dependent on Story 2.1 for the active caption string and Story 2.2 for the selected format.
 
 ### 8. Technical Notes
 Do not embed a real Twitter API embed iframe, as that only supports historical, already-published tweets. This simulator must be built entirely from scratch using Canva App UI Kit primitive elements (`Box`, `Text`) styled to match X's CSS.

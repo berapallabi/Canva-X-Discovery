@@ -44,7 +44,7 @@ Accessibility and format context. Showing users that their accessibility setting
 - Standard X Media overlay pills (Black background, white text, 4px border radius).
 
 ### 7. Dependencies
-- Dependent on Stories 2.1 (Output Format) and 2.3 (Alt-Text / Flags) state variables.
+- Dependent on Stories 2.2 (Output Format) and 2.3 (Alt-Text / Flags) state variables.
 
 ### 8. Technical Notes
 Standard `z-index` layering over the core CSS grid layout established in Story 3.2. Ensure the pill badges do not overflow the bounding box of extreme cropped images.

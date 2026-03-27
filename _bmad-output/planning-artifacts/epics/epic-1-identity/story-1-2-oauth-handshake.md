@@ -47,6 +47,12 @@
     *   **When** the backend saves them
     *   **Then** they MUST be stored strictly in Canva's official secure infrastructure. No custom, hackable 3rd-party database can be used to hold my identity data.
 
+*   **AC8: Draft Persistence Across Auth Boundary (Data Handling)**
+    *   **Given** I have already drafted a post (Caption, Format, Selected Pages) in the Zero-State
+    *   **When** I click "Connect to X" and successfully complete the OAuth handshake
+    *   **Then** upon the panel refreshing to the "Authenticated State", ALL my drafted content MUST remain exactly as I left it.
+    *   **And** the app MUST NOT clear the React state or reset the composition fields to empty.
+
 ### 3. Business Context / Objective
 Trust and Security are paramount for platform applications. By utilizing the native Canva popup and vault infrastructure, we guarantee to the user that we are not stealing their X passwords or retaining their tokens on unsecured private servers. 
 

@@ -34,9 +34,13 @@
 
 *   **AC5: Epic 2 Composition Interaction (Dependency Mapping)**
     *   **Given** the "Connect to X" button wrapper is active at the bottom of the panel
-    *   **When** the actual Post Composition fields (Caption Editor, Page Selector) are implemented later in **Epic 2**
-    *   **Then** this Zero-State UI MUST permit those fields to render *above* it.
-    *   **And** I MUST be able to fully type a caption and select pages without being blocked by the "Connect" overlay, ensuring true Deferred Authentication.
+    *   **When** I explore the app interface before logging in
+    *   **Then** I MUST be able to fully interact with ALL composition fields:
+        *   **Caption Editor** (Typing/Length checks)
+        *   **Format Selection** (Image/Video/GIF)
+        *   **Page Selector** (Grid/Sequence selection)
+        *   **Advanced Settings** (Alt-Text, Reply Controls, Location, and Tagging stubs).
+    *   **And** the "Connect to X" button MUST NOT physically obscure or block access to these fields (Standard UI layering).
 
 ### 3. Business Context / Objective
 Immediate forced logins (Auth Walls) have a 60% abandonment rate. By building a "Zero-State" UI that allows the user to see the app's interface and (eventually) draft their post before logging in, we increase feature adoption and user trust.

@@ -1,9 +1,9 @@
-# Story 2.1: Caption Editor & Output Formats
+# Story 2.1: Caption Editor & Character Limits
 
 ### 1. Core User Story Statement
 **As an** authenticated Canva Creator,
-**I want to** type my post caption and select whether I am publishing an Image, Video, or GIF,
-**So that** my core payload is formatted correctly for X's validation limits.
+**I want to** type my post caption and have real-time feedback on character length,
+**So that** my text is optimized for X's platform-native limitations.
 
 ### 2. Acceptance Criteria
 
@@ -25,11 +25,11 @@
     *   **Then** the UI MUST display a clear checkbox nearby stating: "I have an X Premium account (Unlocks 25,000 limit)."
     *   **And** when I explicitly check this box, the character limit validation ceiling shifts to 25,000, and the "Publish" button unlocks.
 
-*   **AC4: Output Format Selection (Data Handling)**
-    *   **Given** the Caption box is filled out
-    *   **When** I locate the "Export As" dropdown element
-    *   **Then** I MUST explicitly select between `Static Image`, `Video (MP4)`, or `Animated GIF`.
-    *   **And** this selection MUST mutate the internal state so the Preview simulator knows exactly how to render the media payload.
+*   **AC4: Adaptive Hashtag Detection (UI Behavior)**
+    *   **Given** I am typing in the Caption Editor
+    *   **When** I type a string starting with `#` followed by alphanumeric characters
+    *   **Then** the UI MUST physically highlight this substring differently from the standard text (e.g., brand color blue).
+    *   **And** the character counter MUST correctly include the `#` symbol in the final count.
 
 ### 3. Business Context / Objective
 Providing accurate, platform-native limitations (like 280 character hard-caps) ensures our users don't waste time on long background render processes just to have the X API reject it at the finish line.
@@ -38,10 +38,9 @@ Providing accurate, platform-native limitations (like 280 character hard-caps) e
 - Multi-line Canva App UI Kit `TextInput`.
 - Live character counting logic (handling unicode/emoji weights properly).
 - The Premium Override checkbox.
-- Output Format selection dropdown.
 
 ### 5. Out of Scope
-- Uploading the actual media payload (Epic 4).
+- Format selection (handled in Story 2.2).
 - The visual Preview simulation logic (Epic 3).
 
 ### 6. UI/UX References
