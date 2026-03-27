@@ -1,3 +1,0 @@
-# Story 4.2: Dynamic Asymmetrical Grid Rendering
-As a Creator with multiple static images, I want the Preview to emulate exactly how my 2, 3, or 4 distinct Canva slides will crop together.
-**Given** 3 images in the state tree, **When** passed to the Preview grid, **Then** one anchor element MUST span 100% height left-aligned, and two auxiliary elements MUST stack 50/50 right-aligned to match the X engine visual crop math identically.

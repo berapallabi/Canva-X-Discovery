@@ -1,3 +1,0 @@
-# Story 3.2: Multi-Page Thread Sequencing
-As a Power User, I want to activate Thread Mode on my dense 10-slide Canva presentation, so that it sequentializes cleanly into a 10-Tweet X Thread.
-**Given** multiple design pages in state, **When** Thread Mode is toggled ON, **Then** map pages 1:1 against discreet `publishContent()` calls leveraging the `in_reply_to_tweet_id` sequence loop (Max 25 allowed).

@@ -1,3 +1,0 @@
-# Story 5.4: Confirmation DOM & Live X Linking
-As a User, I want immediate confirmation that my post succeeded along with a direct link to it.
-**Given** a `HTTP 201` returned from the X `/2/tweets` route, **When** received by the frontend, **Then** unmount all drafting components flawlessly (returning to Zero State UI) and push the permanent `https://x.com/user/status/...` URL directly into a final Success Dialog Overlay for clicking.

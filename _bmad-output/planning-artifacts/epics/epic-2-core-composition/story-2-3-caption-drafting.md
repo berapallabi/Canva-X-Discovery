@@ -1,3 +1,0 @@
-# Story 2.3: Live Captioning & Premium Character Override
-As a User, I want to type my post with a decrementing live character count limiting me strictly to 280 chars, but bypassable if I manually attest to being Premium.
-**Given** the user typing, **When** >280 characters, **Then** lock publish button natively. **And When** user checks the "Allow 25,000 characters (Premium Override)" checkbox, **Then** dynamically unlock the publish button, delegating the final trust layer entirely to the X API (due to v2 lacking `users/me` Premium status keys).

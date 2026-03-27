@@ -1,3 +1,0 @@
-# Story 2.1: Implement Canva Design Page Selection
-As a User, I want to seamlessly select which pages of my Canva design I wish to publish, so I can target specific slides out of massive decks.
-**Given** the user configures the Settings panel, **When** they click "Select Pages", **Then** the native Canva page selector MUST activate without blocking the plugin UI. **And** up to 4 pages may be aggregated into the local payload state.

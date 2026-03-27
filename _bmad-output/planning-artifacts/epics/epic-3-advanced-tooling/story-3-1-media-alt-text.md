@@ -1,3 +1,0 @@
-# Story 3.1: Image Accessibility & Alt-Text Mapping
-As an Accessibility-conscious User, I want to append 1000-character Alt-Text directly to my visual composition, so X screen-readers can parse my Canva graphics.
-**Given** 1-4 images selected in the state tree, **When** the Advanced chevron is expanded, **Then** correctly generate N distinct <input> fields correlating specifically to the image indexes.

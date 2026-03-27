@@ -1,3 +1,0 @@
-# Story 5.2: MP4 Chunking Engine for Vercel Payload Limits
-As an Architect, I want the Canva React layer to manually partition heavy MP4 files, so we don't instantly crash our 4.5MB Serverless Function execution limits on Vercel.
-**Given** a video binary >4MB, **When** hitting the frontend `publishContent()` logic, **Then** natively slice the byte array into chunks exactly <= 3.9MB. **And** stream these chunks individually up to the Next.js Proxy, which passes them discreetly to `media/upload (APPEND)` at X v1.1.

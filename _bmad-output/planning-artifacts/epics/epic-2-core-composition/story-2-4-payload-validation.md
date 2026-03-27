@@ -1,3 +1,0 @@
-# Story 2.4: Frontend Constraints & Payload Validation
-As a User, I want to see explicit UI errors if my Canva format doesn't natively fit into X's limits, so that I don't wait for a failed upload execution to realize my video was 3GB.
-**Given** the 'Publish' intent, **When** payload size exceeds X constraints (5MB Images, 15MB GIFs) or duration exceeds 140s, **Then** permanently block the Publish execution and render localized red-text inline help.
