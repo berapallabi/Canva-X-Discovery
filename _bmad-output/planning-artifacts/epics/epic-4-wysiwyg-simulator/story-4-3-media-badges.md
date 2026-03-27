@@ -1,0 +1,3 @@
+# Story 4.3: Overlay Badges & Sensitive CSS Blurs
+As a User activating advanced settings, I want visual representations of those settings placed directly inside the Preview for confirmation.
+**Given** Alt-Text is applied, **Then** render the black/white 'ALT' pill on bottom-left. **Given** Sensitive Flag is checked, **Then** overwrite the entire image container with a heavily blurred CSS filter overlay reading 'The following media includes potentially sensitive content'.

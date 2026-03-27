@@ -1,0 +1,3 @@
+# Story 3.4: Degraded UX Tagging & Placebo Content Flags
+As a Product Manager, I want User Tagging and Sensitive Settings explicitly implemented as degraded UI mockups to satisfy original PRD goals while strictly conforming to the physical realities of X API v2.
+**Given** the user tags a profile via the Search Component, **Then** SILENTLY append the generated `@mention` to the end of the text Payload string instead of marking X coordinates. **And Given** the Sensitive Flag toggle is checked, **Then** apply it purely to the Canva WYSIWYG Simulator without ever attempting to send a `possibly_sensitive` flag down the pipeline.

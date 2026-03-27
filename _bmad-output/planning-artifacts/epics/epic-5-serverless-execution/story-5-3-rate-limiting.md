@@ -1,0 +1,3 @@
+# Story 5.3: Graceful Edge Error & 429 Trapping
+As a User, I want to clearly understand if X is broken or overriding limits so I don't blame the Canva app UI.
+**Given** a failed payload response code `429`, **When** caught by the Next.js `try/catch` block, **Then** forcefully extract the `x-rate-limit-reset` Unix timestamp. **And** surface a red Toast message translating the Unix timestamp to localized User hours (e.g. "Try again at 4:32 PM").

@@ -1,0 +1,3 @@
+# Story 5.1: Zero-Retention Next.js Publish Proxy
+As a Security Officer, I want the backend API to function simply as a transit pipe, fetching secrets per-request and purging memories instantly, so we remain GDPR/CCPA native.
+**Given** an incoming HTTP POST from Canva Apps SDK containing the `PublishRef`, **When** decoded via JWT middleware, **Then** immediately transit `fetch()` arrays outbound to the X infrastructure. The Next.js endpoint must possess strictly no `prisma` or SQL ORM connections.

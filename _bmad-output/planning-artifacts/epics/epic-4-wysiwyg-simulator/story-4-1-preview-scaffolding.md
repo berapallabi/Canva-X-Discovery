@@ -1,0 +1,3 @@
+# Story 4.1: Reactive Preview Scaffolding & DOM
+As a Creator, I want a flawless visual preview that mimics the X Feed exactly, so I have absolute confidence before clicking Publish.
+**Given** active payload state, **When** text changes occurs, **Then** the Simulator React state must trigger instantaneous re-renders of the text area, respecting newlines, blue URL highlighting, and exact X font CSS metrics.
