@@ -7,18 +7,20 @@ This document serves as the absolute source of truth for all quantitative constr
 | Media Type | Max File Size | Constraints | UI Validation Rule |
 | :--- | :--- | :--- | :--- |
 | **Static Images** (JPG, PNG, WEBP) | `5 MB` per image | Max dimensions: 8192x8192px.<br>Max quantity: 4 per tweet. | **Block & Disable:** If user selects >4 images, disable selection checkboxes. If an export exceeds 5MB, display inline error: *"Image exceeds 5MB limit. Please compress design."* |
-| **Animated GIFs** | `15 MB` | Max quantity: 1 per tweet.<br>Cannot mix GIF with images/videos. | **Block:** If GIF >15MB, show error. If user attempts to select a GIF + an Image, display conflict error. |
-| **Video** (MP4, MOV) | `512 MB` | Max duration: `140 seconds` (2m20s).<br>Max resolution: 1920x1200 or 1200x1920.<br>Max framerate: 60fps.<br>Max quantity: 1 per tweet.<br>Cannot mix with images. | **Block:** If export >140s, show error: *"Video must be under 2m20s. Please trim your design."* Prevent mixing with images. The backend proxy MUST chunk uploads at `3.9MB`. |
+| **[PARKED] Animated GIFs** | `15 MB` | Max quantity: 1 per tweet. | **Block:** Generating and publishing GIFs are parked for the MVP. |
+| **Video** (MP4, MOV) | `512 MB` | Max duration: `140 seconds` (2m20s).<br>Max resolution: 1920x1200 or 1200x1920.<br>Max framerate: 60fps.<br>Max quantity: 1 per tweet. | **Block:** If export >140s, show error: *"Video must be under 2m20s. Please trim your design."* The backend proxy MUST chunk uploads at `3.9MB`. |
 
 ## 2. Text & Metadata Constraints (X Native API)
 
 | Input Field | Maximum Limit | Overflow Behavior (UI Rule) |
 | :--- | :--- | :--- |
-| **Caption Text** | `280 characters` (Standard)<br>`25,000 characters` (Premium) | **Warn & Block:** Show a live decrementing counter. **[API LIMIT]:** X does not broadcast Premium status. UI must manually ask user if they are Premium to unlock 25,000 limit. |
+| **Caption Text** | `250 characters` (Strict limits) | **Warn & Block:** Show a live decrementing counter against 250 limits physically. Ensure UI prevents publishing if crossed. |
 | **Alt-Text** | `1000 characters` per media item | **Block:** Display character limit on Alt-Text input field. Prevent typing >1000 chars. |
-| **User Tagging (@)** | `10 users` per visual media item | **[BLOCKED BY X API v2]:** Native image tagging unsupported. Warn user that tags will be converted into standard `@mentions` appended to the text caption. |
+| **Video Caption Upload (.srt)** | Binary JSON mapping | **Block:** File format must rigorously match `.srt` valid encodings. |
+| **User Tagging (@)** | `10 users` per post length | **[BLOCKED BY X API v2]:** Native image tagging unsupported natively. UI ensures user tags are appended as physical text strings at the end of the post. |
 | **Sensitive Flag** | Boolean | **[BLOCKED BY X API v2]:** X API v2 dropped per-tweet support. UI checkbox acts as a placebo for the Canva Preview only. |
-| **Thread Depth** | `25 tweets` maximum per thread | **Block:** If the Canva flow attempts to chain >25 pages into a sequential thread, block the thread toggle and show error. |
+| **[PARKED] Thread Depth** | `25 tweets` maximum per thread | **Parked feature:** Threading chains are removed from the MVP. |
+| **[PARKED] Premium Limits** | `25,000 characters` | **Parked feature:** Limits are enforced stringently to 250 regardless of tier. |
 
 ## 3. Infrastructural Constraints
 

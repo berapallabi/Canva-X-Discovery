@@ -23,12 +23,12 @@ This table maps every user-facing PRD interaction to the explicit X API Endpoint
 | PRD Feature | X API Endpoint | Version | Method | Implementation Details & Validation Schema |
 | :--- | :--- | :--- | :--- | :--- |
 | **Fetch Profile** (Avatar, @handle) | `/2/users/me` | v2 | `GET` | **Query Params:** `?user.fields=profile_image_url`. Returns the active user context for the Canva UI Account Selector. |
-| **Upload Image / GIF** (<5MB) | `upload.twitter.com/1.1/media/upload.json` | v1.1 | `POST` | X API v2 *does not* support media uploads. The app must fallback to the v1.1 endpoint. Payload is standard `multipart/form-data`. Returns `media_id_string`. |
+| **Upload Image** (<5MB) | `upload.twitter.com/1.1/media/upload.json` | v1.1 | `POST` | X API v2 *does not* support media uploads. The app must fallback to the v1.1 endpoint. Payload is standard `multipart/form-data`. Returns `media_id_string`. |
 | **Upload Video** (>5MB) | `upload.twitter.com/1.1/media/upload.json` | v1.1 | `POST`| Requires 3-step sequence to bypass Vercel limits:<br>1. `command=INIT`<br>2. `command=APPEND` (Loop sending 3.9MB chunks)<br>3. `command=FINALIZE` |
-| **Alt-Text Processing** | `upload.twitter.com/1.1/media/metadata/create.json` | v1.1 | `POST` | Must be called successfully *after* `FINALIZE` but *before* the final tweet is published. Payload: `{ "media_id": "123", "alt_text": { "text": "value" } }`. |
-| **Publish Standard Post** | `/2/tweets` | v2 | `POST` | Core execution. Payload accepts `text` (Caption) and `media.media_ids` (Array of up to 4 image IDs or 1 Video ID). |
+| **Alt-Text / Video Caption (.srt) Processing** | `upload.twitter.com/1.1/media/metadata/create.json` | v1.1 | `POST` | Must be called successfully *after* `FINALIZE` but *before* the final post is published. Payload connects metadata payloads contextually. |
+| **Publish Standard Post** | `/2/tweets` | v2 | `POST` | Core execution. Payload accepts `text` (Caption max 250 characters) and `media.media_ids`. |
 | **Reply Controls** | `/2/tweets` | v2 | `POST` | Passed in the publish payload via `reply_settings`. Valid enum values: `mentionedUsers` or `following`. |
-| **Thread Building** | `/2/tweets` | v2 | `POST` | Requires sequential execution. Tweet #2 must capture the `tweet_id` returned from Tweet #1, and pass it into the payload under `reply.in_reply_to_tweet_id`. |
+| **[PARKED] Thread Building** | `/2/tweets` | v2 | `POST` | Threading sequence flows have been parked and removed natively from MVP scope logic. |
 
 ---
 
@@ -39,14 +39,14 @@ During this API feasibility spike, we have identified features requested in the 
 ### 🔴 Limitation 1: Image User Tagging
 - **Proposed UX:** User adds "@handles" natively to the Canva image via an Advanced Setting.
 - **API Reality:** The X /v2/tweets endpoint *does not support* the `media.tagged_users` parameter that previously existed in v1.1. It is technically impossible to attach user tags to visual media via the public v2 API today.
-- **Forced Resolution:** The "Image Tagging" advanced field must be deleted from the PRD. Users must be educated to simply `@mention` other accounts inside the main text `Caption` instead.
+- **Forced Resolution:** Supported via post-style fallback where standard `@mentions` append physically to the end of the text Payload natively (max 10).
 
 ### 🔴 Limitation 2: Sensitive Content Warning Flags
-- **Proposed UX:** User checks a box to "Flag media as sensitive" in Canva.
-- **API Reality:** The X v2 payload schema completely dropped the `possibly_sensitive` boolean override. Sensitive media flags must now be configured statically at the X account level, not dynamically per-tweet via third-party APIs.
-- **Forced Resolution:** The "Flag media as sensitive" checkbox must be removed from the Canva Settings UI.
+- **Proposed UX:** User checks a box to "Flag media as sensitive" natively in Canva.
+- **API Reality:** The X v2 payload schema completely dropped the `possibly_sensitive` boolean override. Sensitive media flags must now be configured statically at the X account level, not dynamically per-tweet via third-party APIs natively.
+- **Forced Resolution:** The Canvia Settings UI includes checkboxes that only blur the visual Preview rendering inside Canva implicitly but the X post relies strictly on their profile policy natively.
 
-### 🟡 Limitation 3: Premium Character Limits Verification
+### 🟡 Limitation 3: [PARKED] Premium Character Limits Verification
 - **Proposed UX:** If user switches to an X Premium account, the Canva app magically allows 25,000 characters.
-- **API Reality:** The `/2/users/me` endpoint *does not* return a boolean flag indicating if a user is subscribed to X Premium. The Canva proxy has no programmatic way of knowing a user's subscription tier natively before publishing.
-- **Forced Resolution:** The Canva UI must enforce the standard `280` limit strictly. To bypass this, we must add a manual user-facing override toggle: *"I am an X Premium subscriber (Allow 25,000 chars)"* that entirely relies on the user's honesty. If they check it and are *not* Premium, the X API will simply reject the final payload with a `400 Bad Request`.
+- **API Reality:** The `/2/users/me` endpoint *does not* return a boolean flag indicating if a user is subscribed to X Premium. The Canva proxy has no programmatic way of knowing natively.
+- **Forced Resolution (Now Parked):** Our MVP officially resolves this by overriding everything natively capping rigidly at 250 characters strictly across the board for all connected profiles.

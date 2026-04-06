@@ -21,10 +21,8 @@
 
 2. **Context-Native, Not Bolted On:** Built using Canva's official Content Publisher intent — the app lives inside Canva's editor panel, using App UI Kit components, indistinguishable from a native Canva feature.
 
-3. **X-Optimised by Design:** Real-time feed preview (light/dark mode), character counter (280 standard / 25,000 X Premium), X media validation pre-flight (format, size, duration), per-user OAuth 2.0 tokens.
+3. **X-Optimised by Design:** Real-time feed preview (light/dark mode), generic character counter (250 strictly enforced), X media validation pre-flight (format, size, duration), per-user OAuth 2.0 tokens.
 
-4. **Deferred Auth, Zero Friction:** Users can configure settings and preview their post before connecting their X account — consistent with Canva's documented deferred authentication pattern (`validityState: "invalid_authentication_required"`).
+4. **Deferred Auth & Onboarding:** Users read through a distinct Onboarding sequence, and can configure settings/preview their post before connecting their X account — consistent with Canva's documented deferred authentication pattern.
 
 5. **Scheduling is App-Owned:** Since Canva's Content Publisher intent does not yet support native scheduling, the app implements a server-side scheduling queue. This is a technical differentiator — no competitor offers in-editor scheduling via the Canva Marketplace at this fidelity.
-
----
