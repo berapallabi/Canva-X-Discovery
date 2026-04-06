@@ -1,16 +1,16 @@
-# Story 1.1: Build Zero-State Onboarding UI
+# Story 1.1: Build Zero-State Deferred Auth UI
 
 ### 1. Core User Story Statement
-**As a** Canva Creator launching the app for the first time,
+**As a** Canva Creator who has dismissed the Onboarding screen,
 **I want to** clearly see the app's interface, its purpose, and exactly what permissions it requires before I log in,
 **So that** I feel secure connecting my X (Twitter) account without hitting a forced login wall immediately.
 
 ### 2. Acceptance Criteria
 
 *   **AC1: Initial App Launch Interface (Happy Path)**
-    *   **Given** I have never connected my X account to this Canva App
-    *   **When** I open the Canva-to-X app in the side panel
-    *   **Then** I should immediately see the app's main layout load within 2 seconds (NFR1).
+    *   **Given** I have cleared the initial Onboarding screen but never connected my X account
+    *   **When** I view the Canva-to-X app in the side panel
+    *   **Then** I should immediately see the app's main layout load within 2 seconds.
     *   **And** I should see a locked/disabled primary "Publish to X" button anchored at the bottom of the panel.
     *   **And** I should see a prominent blue "Connect to X" button rendered directly above the disabled publish button.
     *   **And** I should see placeholder space where my profile information will eventually go.
@@ -35,15 +35,14 @@
 *   **AC5: Epic 2 Composition Interaction (Dependency Mapping)**
     *   **Given** the "Connect to X" button wrapper is active at the bottom of the panel
     *   **When** I explore the app interface before logging in
-    *   **Then** I MUST be able to fully interact with ALL composition fields:
-        *   **Caption Editor** (Typing/Length checks)
-        *   **Format Selection** (Image/Video/GIF)
-        *   **Page Selector** (Grid/Sequence selection)
-        *   **Advanced Settings** (Alt-Text, Reply Controls, Location, and Tagging stubs).
-    *   **And** the "Connect to X" button MUST NOT physically obscure or block access to these fields (Standard UI layering).
+    *   **Then** I MUST be able to fully interact with ALL composition fields exactly as they operate in the authenticated state:
+        *   **Caption Editor** (Typing with 250 character checks)
+        *   **Media Attributes** (Fixed Post Format, mapping up to 4 Image/Video pages)
+        *   **Advanced Settings** (Alt-Text, Video Captions, Content Warnings, and Tagging stubs).
+    *   **And** the "Connect to X" button MUST NOT physically obscure or block access to these fields.
 
 ### 3. Business Context / Objective
-Immediate forced logins (Auth Walls) have a 60% abandonment rate. By building a "Zero-State" UI that allows the user to see the app's interface and (eventually) draft their post before logging in, we increase feature adoption and user trust.
+Immediate forced logins (Auth Walls) have a high abandonment rate. By building a "Zero-State" UI that allows the user to draft their post before logging in, we increase feature adoption and user trust.
 
 ### 4. In scope
 - The visual layout of the unauthenticated app panel.
@@ -57,18 +56,14 @@ Immediate forced logins (Auth Walls) have a 60% abandonment rate. By building a 
 
 ### 6. UI/UX References
 - Standard Canva App UI Kit `Button` component (Solid Blue for primary actions).
-- Standard Canva App UI Kit `Text` component for the small permissions list (Subdued grey text).
 
 ### 7. Dependencies
-- Must be built first to establish the `<AppContainer>` before any Settings (Epic 2) or Previews (Epic 3) can be mounted.
+- Depends on `story-1-0-user-onboarding-ui.md` being cleared.
+- Must be built before any Settings (Epic 2) or Previews (Epic 3) can be mounted.
 
 ### 8. Technical Notes
-The React component should use a simple `isAuthenticated` boolean state. If false, it renders this `ZeroStateFooter` component over the publish area. 
+The React component should check the `isAuthenticated` boolean state. If false, it renders this `ZeroStateFooter` component over the publish area.
 
-### 9. Testing scenarios
-- **Test:** Open app with cleared browser cache. **Expectation:** See "Connect to X" button and disabled publish button.
-- **Test:** Click "Connect" while offline. **Expectation:** Button spins, then fails gracefully with a human-readable error.
-- **Test:** Ensure the load time to see this initial screen is under the 2-second NFR limit.
-
-### 10. Test Data
-- None required for this pure UI state.
+### 9. Testing Scenarios
+- **Test:** Open app with cleared browser cache -> See Onboarding -> Click Open -> See "Connect to X" button and disabled publish button.
+- **Test:** Click "Connect" while offline. **Expectation:** Button spins, then fails gracefully.

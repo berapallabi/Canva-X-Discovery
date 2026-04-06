@@ -1,103 +1,65 @@
 # Visual User Journey Flowcharts
 
-This document provides visual state-machine representations of the textual click-map found in [`user-journeys.md`](./user-journeys.md). It is designed to visually map every constraint, validation boundary, and network exception for the frontend engineering team.
+This document provides visual state-machine representations of the textual click-map found in [`user-journeys.md`](./user-journeys.md). It is designed to visually map every constraint, validation boundary, and the exact flow from the finalized canonical workflow document.
 
-## 1. End-to-End Integration Flow (Happy Path + Exhaustive Exceptions)
+## 1. End-to-End Integration Flow
 
-This diagram tracks the UI interactions from the Canva Share Menu through to the final X API Network responses, including all explicit HTTP 4xx/5xx handling.
+This diagram tracks the UI interactions from the Canva Share Menu through to the final X Publish execution, explicitly mapping the Post Attributes and Settings evaluated before publishing.
 
 ```mermaid
 graph TD
     classDef uiState fill:#f9f9f9,stroke:#333,stroke-width:2px;
     classDef action fill:#d4e6f1,stroke:#2980b9,stroke-width:2px;
-    classDef error fill:#f5b7b1,stroke:#c0392b,stroke-width:2px;
-    classDef success fill:#d5f5e3,stroke:#27ae60,stroke-width:2px;
-    classDef backend fill:#fcf3cf,stroke:#f1c40f,stroke-width:2px;
+    classDef auth fill:#fcf3cf,stroke:#f1c40f,stroke-width:2px;
+    classDef postAttr fill:#e8daef,stroke:#8e44ad,stroke-width:2px;
+    classDef postSet fill:#d5f5e3,stroke:#27ae60,stroke-width:2px;
 
-    %% Phase 1 & 2: Entry & Routing
-    A([User clicks Share > X App Icon]) --> B{auth.getTokens Check}:::backend
+    %% Entry
+    Start([User creates a design]) --> Share[Selects Share button on top right corner]:::action
+    Share --> SelectX[Select X from the social media apps list]:::action
     
-    B -->|First-Time User| C[Phase 2A: Static Onboarding Page]:::uiState
-    C --> D[User clicks 'Open']:::action
-    D --> E[Phase 2B: Zero-State Settings UI]:::uiState
+    %% Onboarding Check
+    SelectX --> Q1{Is first time user?}
+    Q1 -->|YES| Onboard[Show user onboarding page]:::uiState
+    Onboard --> ClickOpen[User clicks on Open button]:::action
+    ClickOpen --> SettingsUI[User can see design frame along with other upload settings]:::uiState
+    Q1 -->|NO| SettingsUI
     
-    B -->|Logged Out| E
+    %% Auth Check
+    SettingsUI --> Q2{Is X account connected?}
     
-    E --> F[User drafts Media & Caption in Live Preview]:::action
-    F --> G[User clicks 'Connect to X to Publish']:::action
+    Q2 -->|NO| PreAuth[User can see Connect button at the bottom]:::uiState
+    PreAuth --> ClickConnect[User clicks connect to trigger auth flow]:::action
+    ClickConnect --> AuthFlow[Authentication flow completed]:::auth
+    AuthFlow --> PostAuth[User can see selected account option & Publish button]:::uiState
     
-    G --> H[OAuth 2.0 Popup]:::uiState
-    H -->|Denial or Close| E
-    H -->|Success: Tokens Saved| I
+    Q2 -->|YES| PostAuth
     
-    B -->|Valid Tokens| I[Phase 3: Authenticated Settings UI]:::uiState
+    %% Formatting & Page Selection -> Post Attributes
+    SettingsUI -.-> Format[Fixed format type - Post]:::postAttr
+    Format --> AddMedia[User can add image/Video to the post, Max 4 pages]:::postAttr
     
-    %% Phase 3: Field Interactions & Validations
-    I --> J[Field 3.1: Account Selector]:::action
-    J -.->|Triggers Premium Cap Check| I
-    J -.->|Disconnect Clicked| J1[Canva Token DELETE]:::backend
-    J1 --> E
+    AddMedia --> PostCaption[User writes 'post caption' for the post, 250 char limit]:::postAttr
     
-    I --> K[Field 3.2: Media Selection]:::action
-    K --> K1{Validation Gate}
-    K1 -->|>4 Images| K2[UI Block: 'Max 4 Images']:::error
-    K1 -->|Mixed Media| K3[UI Block: 'Cannot Mix Video/Image']:::error
-    K1 -->|>5MB or >140s| K4[UI Block: 'Size/Duration Exceeded']:::error
-    K1 -.->|Pass| L
+    %% Media Specific Attributes
+    PostCaption --> MediaCheck{Selects slot}
+    MediaCheck -->|Image slot| AltText[Alt txt field gets enabled]:::postAttr
+    MediaCheck -->|Video slot| VideoCap[Video caption file field gets enabled]:::postAttr
     
-    I --> L[Field 3.3: Caption Input]:::action
-    L --> L1{Length Check}
-    L1 -->|>280 Chars Base| L2[UI Block: Red Counter, Publish Disabled]:::error
-    L1 -.->|Pass| M
+    AltText --> PostTagging[User can tag people at a post level, upto 10]:::postAttr
+    VideoCap --> PostTagging
     
-    I --> M[Field 3.5: Advanced Options]:::action
-    M --> M1[Typeahead User Tags]
-    M1 -->|>10 Tags| M2[UI Block: 'Max 10 Tags Toast']:::error
+    PostTagging --> Location[User can add a location to the post]:::postAttr
+    Location --> Reply[User can change reply settings - 4 options available]:::postAttr
     
-    %% Phase 4 & 5: Complex Preview and Publish
-    K1 -.->|Calculates 2x2 Grids or Video UI| N[Phase 4: WYSIWYG Live Preview Renders]:::uiState
-    L1 -.-> N
-    M1 -.-> N
-    M -.->|Inject Thread Lines / Blur Sensitive| N
+    %% Post Settings
+    Reply --> PostSet1[User can enable download video option]:::postSet
+    PostSet1 --> PostSet2[User can set post content warning by marking specific category]:::postSet
     
-    L -.->|Valid Form Payload| O([Phase 5: User clicks 'Publish to X']):::action
+    %% Publish
+    PostAuth -.-> FinalCheck
+    PostSet2 --> FinalCheck{Are all mandatory attributes set & publish enabled?}
     
-    O --> P[Canva SDK publishContent fired]:::backend
-    P --> Q[Next.js Proxy Receives POST]:::backend
-    
-    %% Backend Validations & Responses
-    Q --> R{Verify Canva JWT Signature}:::backend
-    R -->|HTTP 401 Invalid Sign| R1[UI Purge Tokens: 'Session Expired']:::error
-    R1 --> C
-    
-    R -->|Valid| S[React Proxy Chunker initialized]:::backend
-    S --> T[X API /media/upload INIT + APPEND + FINALIZE]:::backend
-    
-    T --> U[X API /tweets POST with Media ID]:::backend
-    
-    U -->|HTTP 502/503| U1[UI Halt: 'X API Downtime']:::error
-    U -->|HTTP 429| U2[UI Halt: 'Rate Limit Exhausted Epoch']:::error
-    U -->|HTTP 403 Suspended| R1
-    U -->|HTTP 200 Success| V([Phase 6: Success Screen 'View on X' Link]):::success
-```
-
-## 2. Dynamic Thread Builder Validation UX
-
-This sub-diagram zooms into the UI logic for Field 3.4 (`+ Add another tweet`), mapping exactly how the UI prevents users from breaking X's maximum thread depth limit natively within Canva.
-
-```mermaid
-graph LR
-    classDef uiState fill:#f9f9f9,stroke:#333,stroke-width:2px;
-    classDef action fill:#d4e6f1,stroke:#2980b9,stroke-width:2px;
-    classDef error fill:#f5b7b1,stroke:#c0392b,stroke-width:2px;
-
-    Start([User clicks '+ Add another tweet']) --> Eval{Count Current Blocks}
-    
-    Eval -->|Count < 25| Render[UI: Render new Media + Caption block below]:::uiState
-    Render --> Update[UI: Append vertical thread-line SVG across blocks]:::uiState
-    Update --> Pre[WYSIWYG: Render connected thread visually]:::uiState
-    Pre --> Await[Await Next User Action]
-    
-    Eval -->|Count = 25| Max[UI: Hide '+ Add another tweet' Button]:::error
-    Max --> Warn[UI: Display Toast 'Maximum thread length of 25 reached']:::error
+    FinalCheck -->|YES| ClickPublish[User clicks on publish now]:::action
+    ClickPublish --> Execution[Publish execution]:::auth
 ```

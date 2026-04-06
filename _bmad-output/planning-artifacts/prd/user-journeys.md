@@ -26,7 +26,7 @@ This document explicitly defines the entire sequence of events, available fields
 - **UI Rendered (Onboarding Page):** A static, dedicated welcome screen specifically designed to introduce the integration before the user touches any interactive controls.
 - **Fields & Elements:**
   - `Hero Graphic`: High-quality Canva + X feature image.
-  - `Value Proposition Text`: Explanation of features (e.g., *"Post directly to X, build threads, and manage multiple accounts without leaving the editor."*).
+  - `Value Proposition Text`: Explanation of features (e.g., *"Post directly to X and manage multiple accounts without leaving the editor."*).
   - `Terms & Privacy Links`: Clickable hyperlinks.
   - `Open` Button: Primary CTA.
 - **Interaction [Click 'Open']:** The Onboarding screen permanently dismisses. The UI renders the **Zero-State Settings Panel (See Path B)**.
@@ -34,25 +34,24 @@ This document explicitly defines the entire sequence of events, available fields
 ### Path B: Unauthenticated User (Returning but logged out)
 The app operates on a strict **Deferred Authentication** paradigm. Users do NOT face a hard login wall. Instead, they see a fully functional "Zero-State" Publisher UI to demonstrate value before gating the experience.
 - **Fields & Elements Available (Pre-Login):**
-  - `Hero Banner`: A dismissible banner ("Connect to X to unlock threaded publishing and premium features") positioned above the form.
   - `Field 3.2 (Media Selection)`: Fully unlocked. Users can select design pages, and the app will enforce >5MB or 140s video validations locally.
   - `Field 3.3 (Caption Input)`: Fully unlocked. Users can write text, utilize `@mentions`, and view dynamic character counts.
   - `Phase 4 (Live WYSIWYG Preview)`: Fully unlocked. Visually renders the drafted layout mirroring X's native UI.
-  - *(HIDDEN)*: Advanced options (User Tags, Reply restrictions, Content Warnings, Threading) and Account Selectors remain hidden until authenticated.
-- **The Auth Gate:** The primary floating button at the bottom of the panel reads **"Connect to X to Publish"**.
-- **Execution [Click 'Connect to X to Publish']:** 
+  - *(HIDDEN)*: Advanced options (User Tags, Reply restrictions, Content Warnings) and Account Selectors remain hidden until authenticated.
+- **The Auth Gate:** The primary floating button at the bottom of the panel reads **"Connect to X"**.
+- **Execution [Click 'Connect to X']:** 
   - The Canva SDK `auth.requestAuthentication()` opens the OAuth 2.0 popup.
   - **Alternative Outcome (Denial):** The user closes the OS popup or explicitly clicks "Deny". The popup closes. The side panel remains in the Zero-State. The user's drafted caption and media selections are perfectly preserved without disruption.
-  - **Primary Outcome (Success):** X authorizes the app. The backend saves the Bearer & Refresh tokens. The UI *preserves* the user's drafted content, instantly swapping the primary button text to "Publish to X", and dynamically unlocking the Advanced Options (Transitioning to Path C).
+  - **Primary Outcome (Success):** X authorizes the app. The backend saves the Bearer & Refresh tokens. The UI *preserves* the user's drafted content, instantly swapping the primary button text to "Publish to X", and dynamically unlocking the Post Settings & Attributes (Transitioning to Path C).
 
 ### Path C: Authenticated State (Returning User, Active Session)
-- **UI Rendered:** Bypass the Onboarding Page and Hero Banner completely. Immediately render the core Settings configuration form fully unlocked (Phase 3).
+- **UI Rendered:** Bypass the Onboarding Page completely. Immediately render the core Settings configuration form fully unlocked (Phase 3).
 
 ---
 
 ## Phase 3: The Core Publisher UI (Settings Panel)
 
-The user is now looking at the primary configuration form to build their post.
+The user is now looking at the primary configuration form to build their post. The app uses a **Fixed format type - Post**, supporting images and videos up to 4 items.
 
 ### Field 3.1: Account Selector Profile
 - **UI State:** A dropdown button displaying the currently active profile (X Avatar Image + `@handle` + Display Name) sourced from X's `users/me` endpoint.
@@ -61,37 +60,32 @@ The user is now looking at the primary configuration form to build their post.
   - `Select Account`: A list of all previously authorized X accounts. (Clicking one instantly swaps the active context and re-renders the Preview Panel).
   - `+ Add New Account`: Re-triggers the Phase 2 OAuth popup to append a new session.
   - `[Trash Icon] Disconnect`: Located next to each account.
-- **Exception Flow (Disconnect):** If user clicks the trash icon, Canva renders a native "Are you sure?" modal. If confirmed, the backend executes an explicit token-destruction API request. If no accounts remain, the user is routed back to Phase 2.
 
 ### Field 3.2: Media Selection (Native Canva Selector)
 - **UI State:** A thumbnail grid or checkbox list showing the pages/artboards of the current Canva design.
 - **Options Available:** Checkboxes to select which pages to export.
 - **Interaction & Validations:**
-  - **Constraint 1:** If the user selects a 5th image. **Outcome:** Checkbox interaction is ignored. The UI renders red inline text: *"Maximum 4 images per tweet."*
-  - **Constraint 2:** If the user selects an MP4 video, then tries to click an image. **Outcome:** Checkbox interaction is ignored. Inline red text: *"Cannot mix videos with static images."*
-  - **Constraint 3:** If the designated export exceeds 5MB (Image) or 140 seconds (Video). **Outcome:** The file is selected, but a heavy red warning banner appears above it: *"Media exceeds maximum X size/duration limit. Please compress or trim."* The Phase 5 Publish button is force-disabled.
+  - **Constraint 1:** If the user selects a 5th item. **Outcome:** Checkbox interaction is ignored. The UI renders red inline text: *"Maximum 4 pages per post."*
+  - **Constraint 2:** If the designated export exceeds 5MB (Image) or 140 seconds (Video). **Outcome:** The file is selected, but a heavy red warning banner appears above it: *"Media exceeds maximum X size/duration limit. Please compress or trim."* The Publish button is force-disabled.
 
-### Field 3.3: Caption Input
-- **UI State:** A large `<textarea>` input for the post body.
+### Field 3.3: Caption Input (Post Caption)
+- **UI State:** A `<textarea>` input for the post body description.
 - **Options Available:** Standard text entry, `@mentions`, and `#hashtags`.
 - **Interaction & Validations:**
-  - User types text. A character counter in the bottom right corner (e.g., `21 / 280`) decrements dynamically.
-  - **Constraint (Max Length):** As soon as the user types the 281st character. **Outcome:** The counter text turns bold red and shows negative numbers (`-14`). The Phase 5 Publish button is force-disabled.
+  - User types text. A character counter in the bottom right corner (e.g., `21 / 250`) decrements dynamically.
+  - **Constraint (Max Length):** As soon as the user types the 251st character. **Outcome:** The counter text turns bold red and shows negative numbers (`-1`). The Phase 5 Publish button is force-disabled.
 
-### Field 3.4: Add Thread Toggle
-- **UI State:** A subtle text-link button: `+ Add another tweet`.
-- **Interaction:** User clicks the toggle.
-- **Outcome:** A secondary, identical **Media Selection (3.2)** and **Caption Input (3.3)** block appears below the first one, visually linked by a vertical thread line.
-- **Constraint (Max Depth):** If the user clicks this 25 times. **Outcome:** The toggle disappears to prevent exceeding X's 25-tweet thread limit.
+### Field 3.4: Post Attributes (Media-Specific Fields)
+Depending on the media selected in Field 3.2, specific attribute fields dynamically render:
+- **Alt Text (Images):** If an image slot is selected, an "Alt text" input field is exposed allowing users to write an image description.
+- **Video Caption (Videos):** If a video slot is selected, a "Video caption" file upload field is exposed allowing users to attach an explicit subtitle/transcription file (e.g. `.srt`) to the video.
 
-### Field 3.5: Advanced Options (Accordion)
-- **UI State:** A collapsible menu labeled `Advanced settings ⚙️`. Defaults to closed.
-- **Interaction:** User clicks to open.
-- **Sub-Fields Revealed:**
-  1. **Alt-Text Inputs:** One text field dynamically generated for *each* image selected in 3.2. (Max 1000 characters enforced natively by `<input maxLength>`).
-  2. **User Tagging Input:** A typeahead search bar. **[BLOCKED BY X API v2]** Because X API v2 physically lacks media-tagging parameters, this UI feature gracefully degrades. When the user selects a tag, the app silently appends the `@mention` text string to the very end of the main Caption body payload instead of marking the image coordinate.
-  3. **Reply Controls Dropdown:** Options: `Everyone` (Default), `Accounts you follow`, `Only accounts you mention`.
-  4. **Content Warning Checkbox:** Label: *"Flag media as sensitive"*. **[BLOCKED BY X API v2]** The X v2 API cannot dynamically apply the `possibly_sensitive` boolean per-tweet. This checkbox provides a local UI blur for the Canva Preview, but the live X post will rely entirely on the user's default account-level settings.
+### Field 3.5: Post Settings & Tagging
+- **Location:** Users can click a "Location" field to attach a geo-tag to the post.
+- **User Tagging Input:** Users can explicitly tag people at a post level (up to 10 accounts) via a dedicated component natively degrading to text mentions.
+- **Reply Controls:** A dropdown with 4 options: `Everyone` (Default), `Accounts you follow`, `Only accounts you mention`, and `Verified accounts`.
+- **Content Warning:** Users can set a post content warning by marking a specific category (e.g., sensitive, violence). 
+- **Enable Download Video:** A toggle to allow or block users to download an attached video.
 
 ---
 
@@ -100,29 +94,22 @@ The user is now looking at the primary configuration form to build their post.
 The Preview panel perfectly mocks the native `x.com` DOM. Every field in Phase 3 exerts a specific, dynamic mutation on the Preview, providing absolute confidence to the creator before executing.
 
 ### 4.1 Media Grid Formats (Reaction to Field 3.2)
-The Preview mathematically restructures based on explicit image counts, mirroring X's native aspect-ratio crops:
-- **1 Image selected:** Renders a sprawling 16:9 or native aspect ratio card.
-- **2 Images selected:** Splits the preview container vertically (50/50). Both images are center-cropped into 8:9 vertical slivers.
-- **3 Images selected:** Renders one large 8:9 vertical sliver on the left, and stacks two 16:9 horizontal images on the right side.
-- **4 Images selected:** Renders a symmetrical 2x2 grid, center-cropping all images to exact 16:9 ratios.
-- **Video/GIF selected:** Renders the media full-bleed with a static X Video UI overlay (a circular `Play` icon in the center, and a black `duration` badge pinned to the bottom right corner).
+The Preview mathematically restructures based on explicit item counts, mirroring X's native aspect-ratio crops:
+- **1 Item:** Renders a sprawling 16:9 or native aspect ratio card.
+- **2 Items:** Splits the preview container vertically (50/50). Both items are center-cropped into 8:9 vertical slivers.
+- **3 Items:** Renders one large 8:9 vertical sliver on the left, and stacks two horizontal items on the right side.
+- **4 Items:** Renders a symmetrical 2x2 grid, center-cropping all items to exact 1:1 ratios.
+- **Video Overlays:** Any video items render with a static X Video UI overlay (a circular `Play` icon in the center).
 
-### 4.2 Multi-Account Cascading Effects (Reaction to Field 3.1)
-When the user switches accounts in the Dropdown (e.g., from a Standard to a Premium X Account):
-- The Avatar and `@handle` at the top of the Preview sync instantly.
-- **[BLOCKED BY X API v2] Premium Status Detection:** The `users/me` endpoint does not broadcast X Premium subscription status. The Canva proxy has no programmatic way of calculating 25,000 character limits dynamically. 
-- **UX Fallback:** The UI renders a manual override checkbox: *"I am an X Premium subscriber (Allow 25,000 characters)"*. The UI relies entirely on the user's honesty before blindly transmitting the massive payload to the Next.js proxy.
-
-### 4.3 Advanced Field Mutations (Reaction to Field 3.5)
+### 4.2 Dynamic Overlays & Accessibility
 - **Alt-Text applied:** Renders a small, black, clickable `ALT` badge pinned to the bottom left of the corresponding image in the Preview.
-- **Content Warning checked:** The Preview applies a CSS `backdrop-filter: blur(20px)` over the media, stamping a native X *"The author flagged this as sensitive"* warning box directly over the blur.
-- **Thread Toggle active:** The Preview injects a 2px solid grey vertical line `#CFD9DE` originating from the bottom of the primary post's Avatar, connecting downward to the Avatar of the secondary thread post rendered precisely below it.
+- **Content Warning checked:** The Preview applies a CSS `backdrop-filter: blur(20px)` over the media, stamping a native X *"The following media includes potentially sensitive content"* warning box directly over the blur.
 
 ---
 
 ## Phase 5: The Publish Execution
 
-**Context:** The user has arranged a valid payload. The "Publish to X" button is purple and clickable.
+**Context:** The user has arranged a valid payload. All mandatory attributes are set. The "Publish to X" button is purple and clickable.
 
 1. **Interaction:** User clicks the primary **`Publish to X`** CTA.
 2. **UI State Transition:** The entire Settings form disables (grayed out). The publish button converts into a loading spinner labeled *"Publishing to X..."*.
@@ -141,7 +128,7 @@ The proxy processes the request. The UI waits for one of four specific HTTP resp
   - **Outcome:** The UI catches a network timeout. Red banner renders: *"Upload timed out. Please compress your video and try again."*
 
 ### The Happy Path (HTTP 200 Success)
-- **Context:** The chunked upload finishes, and X confirms the tweet creation.
+- **Context:** The chunked upload finishes, and X confirms the post creation.
 - **System Operation:** Proxy returns the live `{tweet_id}` and `HTTP 200`.
 - **UI State Transition:** The entire Settings form unmounts entirely.
 - **UI Rendered (The Success Screen):**
